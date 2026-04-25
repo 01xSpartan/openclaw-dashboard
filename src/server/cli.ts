@@ -7,6 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { generateToken } from './auth.js';
 import { startPolling, stopPolling } from './sse.js';
 import app from './index.js';
+import { backfillBusinessRoots } from './businesses.js';
+import { loadState } from './state.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -51,6 +53,17 @@ if (!isDev && existsSync(clientDir)) {
 
 // Start SSE polling
 startPolling();
+
+// Backfill any business roots that don't yet exist on disk.
+const initialState = loadState();
+const matResults = backfillBusinessRoots(initialState.businesses);
+const matFailures = matResults.filter(r => !r.ok);
+if (matFailures.length > 0) {
+  console.error(`[startup] ${matFailures.length} business(es) failed to materialize:`);
+  for (const r of matFailures) {
+    if (!r.ok) console.error(`  - ${r.error}`);
+  }
+}
 
 const server = serve({
   fetch: app.fetch,
