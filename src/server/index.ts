@@ -7,6 +7,7 @@ import { getTodayActivity } from './runs.js';
 import { dispatchCard, killCard, retryCard } from './dispatch.js';
 import { readSandboxedFile, writeSandboxedFile } from './files.js';
 import { handleSSE, broadcast } from './sse.js';
+import { materializeBusinessRoot } from './businesses.js';
 import { ulid } from 'ulid';
 
 const app = new Hono();
@@ -152,6 +153,11 @@ app.post('/api/dashboard/businesses', async (c) => {
     ...s,
     businesses: [...s.businesses, business],
   }));
+
+  const matResult = materializeBusinessRoot(business);
+  if (!matResult.ok) {
+    console.error(`[businesses] failed to materialize ${business.id}: ${matResult.error}`);
+  }
 
   broadcast('state.changed', { version: updated.version });
   return c.json(business, 201);
