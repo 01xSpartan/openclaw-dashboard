@@ -33,23 +33,27 @@ export function materializeBusinessRoot(business: BusinessLike): MaterializeResu
     return { ok: false, error: `sandbox violation: ${business.root} is not under ~/.openclaw/businesses/` };
   }
 
-  const created: string[] = [];
+  try {
+    const created: string[] = [];
 
-  for (const sub of ['agents', 'workspace', 'knowledge']) {
-    const dir = join(expanded, sub);
-    if (!existsSync(dir)) {
-      mkdirSync(dir, { recursive: true });
-      created.push(dir);
+    for (const sub of ['agents', 'workspace', 'knowledge']) {
+      const dir = join(expanded, sub);
+      if (!existsSync(dir)) {
+        mkdirSync(dir, { recursive: true });
+        created.push(dir);
+      }
     }
-  }
 
-  const memPath = join(expanded, 'workspace', 'MEMORY.md');
-  if (!existsSync(memPath)) {
-    writeFileSync(memPath, `# ${business.name} — Memory\n\n`, 'utf-8');
-    created.push(memPath);
-  }
+    const memPath = join(expanded, 'workspace', 'MEMORY.md');
+    if (!existsSync(memPath)) {
+      writeFileSync(memPath, `# ${business.name} — Memory\n\n`, 'utf-8');
+      created.push(memPath);
+    }
 
-  return { ok: true, root: expanded, created };
+    return { ok: true, root: expanded, created };
+  } catch (e) {
+    return { ok: false, error: `filesystem error: ${(e as Error).message}` };
+  }
 }
 
 export function backfillBusinessRoots(businesses: BusinessLike[]): MaterializeResult[] {

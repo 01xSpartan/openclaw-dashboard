@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { mkdtempSync, rmSync, existsSync, readFileSync, writeFileSync, mkdirSync, chmodSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { expandHome, isInsideBusinessesDir, materializeBusinessRoot } from './businesses.js';
 
@@ -101,6 +101,23 @@ test('materializeBusinessRoot rejects a root that escapes via ..', () => {
     });
     assert.equal(result.ok, false);
     if (!result.ok) assert.match(result.error, /sandbox/i);
+  });
+});
+
+test('materializeBusinessRoot returns ok:false when filesystem throws (non-throwing contract)', () => {
+  withTempBusinessesDir((businessesDir) => {
+    // First create the business root, then strip write permissions, then try to materialize.
+    const root = join(businessesDir, 'locked');
+    mkdirSync(root, { recursive: true });
+    chmodSync(root, 0o500);  // r-x only; mkdir of a child should EACCES
+    try {
+      const result = materializeBusinessRoot({ id: 'locked', name: 'Locked', root: '~/.openclaw/businesses/locked' });
+      assert.equal(result.ok, false);
+      if (!result.ok) assert.match(result.error, /filesystem error/i);
+    } finally {
+      // Restore write permission so the temp dir cleanup can succeed.
+      chmodSync(root, 0o700);
+    }
   });
 });
 
