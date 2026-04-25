@@ -14,7 +14,8 @@
     "build:client": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
     "start": "node dist/server/cli.js",
-    "preview": "npm run build && npm start"
+    "preview": "npm run build && npm start",
+    "test": "node --import tsx --test 'src/server/**/*.test.ts'"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.8",
