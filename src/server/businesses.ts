@@ -51,3 +51,13 @@ export function materializeBusinessRoot(business: BusinessLike): MaterializeResu
 
   return { ok: true, root: expanded, created };
 }
+
+export function backfillBusinessRoots(businesses: BusinessLike[]): MaterializeResult[] {
+  return businesses.map(b => {
+    try {
+      return materializeBusinessRoot(b);
+    } catch (e) {
+      return { ok: false, error: `materialize threw: ${(e as Error).message}` };
+    }
+  });
+}

@@ -103,3 +103,28 @@ test('materializeBusinessRoot rejects a root that escapes via ..', () => {
     if (!result.ok) assert.match(result.error, /sandbox/i);
   });
 });
+
+import { backfillBusinessRoots } from './businesses.js';
+
+test('backfillBusinessRoots materializes every business in the list', () => {
+  withTempBusinessesDir((businessesDir) => {
+    const results = backfillBusinessRoots([
+      { id: 'a', name: 'A', root: '~/.openclaw/businesses/a' },
+      { id: 'b', name: 'B', root: '~/.openclaw/businesses/b' },
+    ]);
+    assert.equal(results.length, 2);
+    assert.equal(results.every(r => r.ok), true);
+    assert.equal(existsSync(join(businessesDir, 'a', 'workspace', 'MEMORY.md')), true);
+    assert.equal(existsSync(join(businessesDir, 'b', 'workspace', 'MEMORY.md')), true);
+  });
+});
+
+test('backfillBusinessRoots reports per-business failures without throwing', () => {
+  withTempBusinessesDir(() => {
+    const results = backfillBusinessRoots([
+      { id: 'evil', name: 'Evil', root: '/tmp/evil' },
+    ]);
+    assert.equal(results.length, 1);
+    assert.equal(results[0].ok, false);
+  });
+});
