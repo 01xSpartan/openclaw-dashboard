@@ -1,0 +1,37 @@
+{
+  "name": "openclaw-dashboard",
+  "version": "0.1.0",
+  "description": "OpenClaw Ops Dashboard — manage businesses, agents, and tasks",
+  "type": "module",
+  "bin": {
+    "openclaw-dashboard": "./dist/server/cli.js"
+  },
+  "scripts": {
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:client": "vite",
+    "dev:server": "tsx watch src/server/cli.ts --dev",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "tsc -p tsconfig.server.json",
+    "start": "node dist/server/cli.js",
+    "preview": "npm run build && npm start"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.8",
+    "better-sqlite3": "^11.7.0",
+    "hono": "^4.7.4",
+    "open": "^10.1.0",
+    "ulid": "^2.3.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.9.4",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.0",
+    "concurrently": "^9.1.0",
+    "preact": "^10.25.4",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "zustand": "^5.0.0"
+  }
+}
