@@ -54,14 +54,16 @@ if (!isDev && existsSync(clientDir)) {
 // Start SSE polling
 startPolling();
 
-// Backfill any business roots that don't yet exist on disk.
+// Backfill directory skeletons and MEMORY.md for any businesses missing from disk.
 const initialState = loadState();
 const matResults = backfillBusinessRoots(initialState.businesses);
-const matFailures = matResults.filter(r => !r.ok);
+const matFailures = matResults.filter(
+  (r): r is Extract<typeof r, { ok: false }> => !r.ok
+);
 if (matFailures.length > 0) {
   console.error(`[startup] ${matFailures.length} business(es) failed to materialize:`);
   for (const r of matFailures) {
-    if (!r.ok) console.error(`  - ${r.error}`);
+    console.error(`  - ${r.error}`);
   }
 }
 
